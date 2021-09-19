@@ -5,7 +5,7 @@ MWAIT_CPU=4
 
 NCPUS=$(nproc --all)
 MASK_FULL=0-$NCPUS
-MASK_WO_MWAIT_CPU=0-$((MWAIT_CPU-1)),$((MWAIT_CPU+2))-$((NCPUS-1))
+MASK_REDUCED=0-$((MWAIT_CPU-2)),$((MWAIT_CPU+2))-$((NCPUS-1))
 
 function print_separator {
     for i in {1..80}; do echo -n "="; done
@@ -32,12 +32,14 @@ function set_mask_watchdog {
 make
 print_separator
 
-# Remove as many processes as possible from CPU MWAIT_CPU
-set_mask_all_pids $MASK_WO_MWAIT_CPU
+# Remove as many processes as possible from MWAIT_CPU, the CPU on the same core,
+# and the CPU of the waker
+set_mask_all_pids $MASK_REDUCED
 print_separator
 
-# Disable the CPU watchdog on core 6
-set_mask_watchdog $MASK_WO_MWAIT_CPU
+# Disable the CPU watchdog on core MWAIT_CPU, the CPU on the same core, and the
+# CPU of the waker
+set_mask_watchdog $MASK_REDUCED
 print_separator
 
 sudo insmod cstate_exp.ko
@@ -45,11 +47,11 @@ sleep $((MWAIT_DURATION+2))
 sudo rmmod cstate_exp.ko
 print_separator
 
-# Let processes go back to CPU 6
+# Let processes go back to all CPUs
 set_mask_all_pids $MASK_FULL
 print_separator
 
-# Reenable the CPU watchdog on core 6
+# Reenable the CPU watchdog on all CPUs
 set_mask_watchdog $MASK_FULL
 print_separator
 

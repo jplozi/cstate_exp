@@ -14,7 +14,6 @@
 
 #define MWAIT_DURATION_MS 10000
 #define MWAIT_CPU 4
-#define MWAIT_WAKER 3 
 #define MWAIT_ARG2 0
 
 MODULE_LICENSE("GPL");
@@ -23,6 +22,7 @@ MODULE_DESCRIPTION("A kernel module to test setting a C-state with "
                    "MONITOR/MWAIT.");
 MODULE_VERSION("0.01");
 
+#define MWAIT_WAKER (MWAIT_CPU-1) 
 #define KPROBE_PRE_HANDLER(fname) \
     static int __kprobes fname(struct kprobe *p, struct pt_regs *regs)
 
