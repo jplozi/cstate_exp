@@ -112,6 +112,12 @@ static int thread_mwait(void *data)
     clflush(&shared_var); /* Necessary? */
 
     do {
+        print_freq("Pre-spinloop");
+        printk("[cstate_exp] SPINLOOP\n");
+        for (i = 0; i < 100000000; i++)
+            ;
+        print_freq("Post-spinloop");
+
         mb();
         local_irq_disable();
         printk("[cstate_exp] MONITOR\n");
@@ -123,13 +129,6 @@ static int thread_mwait(void *data)
             printk("[cstate_exp] shared_var != 0, it should be 0! "
                    "Continuing anyway...\n");
         }
-
-        print_freq("Pre-spinloop");
-        printk("[cstate_exp] SPINLOOP\n");
-        for (i = 0; i < 100000000; i++)
-            ;
-        printk("Post-spinloop");
-        print_freq("Post-spinloop");
 
         mb();
         local_irq_disable();
