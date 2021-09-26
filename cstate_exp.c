@@ -78,8 +78,14 @@ static int do_register_kprobe(struct kprobe *kp, char *symbol_name, void *handle
 static void print_freq(char *str)
 {
     unsigned int freq = __aperfmperf_get_khz(MWAIT_CPU);
-    printk("[cstate_exp] %s frequency: %u.%03u\n", str, freq / 1000,
-           freq % 1000);
+    if (!freq) {
+        printk("[cstate_exp] Couldn't read frequency.\n");
+    }
+    else
+    {
+        printk("[cstate_exp] %s frequency: %u.%03u\n", str, freq / 1000,
+               freq % 1000);
+    }
 }
 
 int write_console(char *str)
@@ -130,16 +136,16 @@ static int thread_mwait(void *data)
                    "Continuing anyway...\n");
         }
 
+        print_freq("Pre-MWAIT");
         mb();
         local_irq_disable();
         __tick_nohz_idle_stop_tick();
-        print_freq("Pre-MWAIT");
         printk("[cstate_exp] MWAIT\n");
         __mwait(0, MWAIT_ARG2);
         printk("[cstate_exp] WOKEN UP\n");
-        print_freq("Post-MWAIT");
         __tick_nohz_idle_restart_tick();
         local_irq_enable();
+        print_freq("Post-MWAIT");
 
         if (shared_var != 1)
         {
